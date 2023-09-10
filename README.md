@@ -1,2 +1,1 @@
-# iac-etudes
-Infrastructure-as-Code Études
+# Infrastructure-as-Code Études
