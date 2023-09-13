@@ -11,3 +11,15 @@ Install the following locally:
 Set up AWS account and CLI, so that it is [SSO authenticated](https://docs.aws.amazon.com/cli/latest/userguide/sso-configure-profile-token.html). Make sure you can run without errors:
 - `aws sso login`
 - `aws s3 ls`
+
+## State store
+
+Each etude is completely independent and will use separate state store. Run the following command to create new state store configuration on relevant (and supported) cloud provider:
+
+```
+$ ./state_store.sh create <cloud_provider> <etude_name>
+```
+
+Where `cloud_provider` is supported cloud provider name (eg "aws") and `etude_name` is name of an etude found in `etudes/` directory.
+
+Cloud provider specific configuration is located in `ansible/vars/cloud_config.yml`.
