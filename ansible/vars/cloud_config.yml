@@ -1,0 +1,4 @@
+state_resource_prefix: "rsi-iac-etudes"
+cloud_providers:
+  aws:
+    region: "us-east-2"
