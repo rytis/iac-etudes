@@ -1,17 +1,13 @@
 provider "aws" {
-  region = local.region
+  region = var.region
 }
 
 ###############################################################################
 ## Init
 
 locals {
-  vpc_name       = var.vpc_name
-  region         = var.region
-  vpc_cidr       = var.vpc_cidr
-  instance_type  = var.instance_type
   azs            = slice(data.aws_availability_zones.available.names, 0, 1)
-  public_subnets = [cidrsubnet(local.vpc_cidr, 8, 0)]
+  public_subnets = [cidrsubnet(var.vpc_cidr, 8, 0)]
 }
 
 ## Data discovery
@@ -34,10 +30,11 @@ data "aws_ami" "amazon_linux" {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name           = local.vpc_name
-  cidr           = local.vpc_cidr
-  azs            = local.azs
-  public_subnets = local.public_subnets
+  name                    = var.vpc_name
+  cidr                    = var.vpc_cidr
+  azs                     = local.azs
+  public_subnets          = local.public_subnets
+  map_public_ip_on_launch = true
 }
 
 ###############################################################################
@@ -46,7 +43,7 @@ module "vpc" {
 module "server" {
   source        = "terraform-aws-modules/ec2-instance/aws"
   ami           = data.aws_ami.amazon_linux.id
-  instance_type = local.instance_type
+  instance_type = var.instance_type
   subnet_id     = module.vpc.public_subnets[0]
 }
 
