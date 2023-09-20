@@ -9,3 +9,13 @@
   - Preconfigured
 - Postbuild configuration
 
+# Usage
+
+## Build image
+
+In `packer/` run:
+
+```
+$ packer init build.pkr.hcl
+$ packer build build.pkr.hcl
+```
