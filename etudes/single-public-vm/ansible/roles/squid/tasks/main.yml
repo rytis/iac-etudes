@@ -1,0 +1,12 @@
+---
+- name: Install Squid
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - squid
+
+- name: Enable Squid service
+  ansible.builtin.service:
+    name: squid
+    enabled: true

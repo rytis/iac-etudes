@@ -10,7 +10,9 @@ locals {
   public_subnets = [cidrsubnet(var.vpc_cidr, 8, 0)]
 }
 
+##
 ## Data discovery
+##
 
 data "aws_availability_zones" "available" {}
 
@@ -44,6 +46,8 @@ data "aws_iam_policy_document" "s3_endpoint_policy" {
     }
   }
 }
+
+data "aws_caller_identity" "this" {}
 
 ###############################################################################
 ## VPC
@@ -145,3 +149,30 @@ module "server" {
     CloudWatchAgent = data.aws_iam_policy.aws_cloudwatch_agent.arn
   }
 }
+
+###############################################################################
+## Secrets
+
+# module "secrets_manager" {
+#   source = "terraform-aws-modules/secrets-manager/aws"
+#
+#   name_prefix = "squid_proxy"
+#
+#   create_policy       = true
+#   block_public_policy = true
+#
+#   policy_statements = {
+#     read = {
+#       principals = [{
+#         type        = "AWS"
+#         identifiers = [data.aws_caller_identity.this.arn]
+#       }]
+#       actions   = ["secretsmanager:GetSecretValue"]
+#       resources = ["*"]
+#     }
+#   }
+#
+#   create_random_password = true
+#   random_password_length = 32
+# }
+

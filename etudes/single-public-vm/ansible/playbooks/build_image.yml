@@ -1,6 +1,9 @@
 ---
-- hosts: all
-  become: yes
-  tasks:
-    - ansible.builtin.ping:
+- name: Build base image
+  hosts: all
+  become: true
+  roles:
+    - common
+    - installer
+    - squid
 

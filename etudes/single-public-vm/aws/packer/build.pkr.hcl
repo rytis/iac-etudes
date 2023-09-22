@@ -39,5 +39,8 @@ build {
     playbook_file = "../../ansible/playbooks/build_image.yml"
     user          = "ec2-user"
     use_proxy     = false
+    ansible_env_vars = [
+      "ANSIBLE_ROLES_PATH=../../ansible/roles"
+    ]
   }
 }
