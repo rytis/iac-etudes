@@ -38,9 +38,22 @@ Pausing after run of step 'StepProvision'. Press enter to continue.
 ```
 
 While the Packer is waiting for input, copy and paste the ansible command it ran (will be shown)
-in to another terminal window, append the following to it, and then run:
+in to another terminal window, prepend/append the following to it, and then run:
 
 ```
-$ <..long ansible-playbook command..> -i '<ip of the temp instance>,' -u ec2-user
+$ ANSIBLE_ROLES_PATH=../../ansible/roles \
+  <...long ansible-playbook command from packer output...> \
+  -i '<ip of the temp instance as shown in packer output>,' -u ec2-user
 ```
 
+If you need to access the temporary instance, run the following:
+
+```
+$ ssh uc2-user@<ip of the temp instance as shown in packer output> -i ec2_single-public-vm.pem
+```
+
+# Tips
+
+## Access EC2 instance that is not on public network
+
+Set up [port forwarding](https://aws.amazon.com/blogs/aws/new-port-forwarding-using-aws-system-manager-sessions-manager/) to the instance.

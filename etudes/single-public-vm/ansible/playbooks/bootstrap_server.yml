@@ -1,0 +1,10 @@
+---
+- name: Initial server bootstrap
+  hosts: localhost
+  connection: local
+  become: true
+  tasks:
+    - name: Initialise Squid configuration
+      ansible.builtin.include_role:
+        name: squid
+        tasks_from: init
