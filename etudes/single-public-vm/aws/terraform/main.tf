@@ -16,13 +16,22 @@ locals {
 
 data "aws_availability_zones" "available" {}
 
-data "aws_ami" "amazon_linux" {
+# data "aws_ami" "amazon_linux" {
+#   most_recent = true
+#   owners      = ["amazon"]
+#
+#   filter {
+#     name   = "name"
+#     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+#   }
+# }
+
+data "aws_ami" "single_vm" {
   most_recent = true
-  owners      = ["amazon"]
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = [var.ami_name]
   }
 }
 
@@ -128,6 +137,12 @@ module "vpc_endpoints" {
       subnet_ids          = module.vpc.public_subnets
       private_dns_enabled = true
     }
+    secretsmanager = {
+      service             = "secretsmanager"
+      service_type        = "Interface"
+      subnet_ids          = module.vpc.public_subnets
+      private_dns_enabled = true
+    }
   }
 }
 
@@ -136,7 +151,7 @@ module "vpc_endpoints" {
 
 module "server" {
   source        = "terraform-aws-modules/ec2-instance/aws"
-  ami           = data.aws_ami.amazon_linux.id
+  ami           = data.aws_ami.single_vm.id
   instance_type = var.instance_type
   subnet_id     = module.vpc.public_subnets[0]
   vpc_security_group_ids = [
@@ -153,26 +168,28 @@ module "server" {
 ###############################################################################
 ## Secrets
 
-# module "secrets_manager" {
-#   source = "terraform-aws-modules/secrets-manager/aws"
-#
-#   name_prefix = "squid_proxy"
-#
-#   create_policy       = true
-#   block_public_policy = true
-#
-#   policy_statements = {
-#     read = {
-#       principals = [{
-#         type        = "AWS"
-#         identifiers = [data.aws_caller_identity.this.arn]
-#       }]
-#       actions   = ["secretsmanager:GetSecretValue"]
-#       resources = ["*"]
-#     }
-#   }
-#
-#   create_random_password = true
-#   random_password_length = 32
-# }
+module "secrets_manager" {
+  source = "terraform-aws-modules/secrets-manager/aws"
+
+  name = "squid_proxy_password"
+
+  create_policy       = true
+  block_public_policy = true
+
+  policy_statements = {
+    read = {
+      principals = [
+        {
+          type        = "AWS"
+          identifiers = [data.aws_caller_identity.this.arn, module.server.iam_role_arn]
+        }
+      ]
+      actions   = ["secretsmanager:GetSecretValue"]
+      resources = ["*"]
+    }
+  }
+
+  create_random_password = true
+  random_password_length = 32
+}
 

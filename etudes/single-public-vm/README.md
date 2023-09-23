@@ -57,3 +57,12 @@ $ ssh uc2-user@<ip of the temp instance as shown in packer output> -i ec2_single
 ## Access EC2 instance that is not on public network
 
 Set up [port forwarding](https://aws.amazon.com/blogs/aws/new-port-forwarding-using-aws-system-manager-sessions-manager/) to the instance.
+
+## SSM on CLI
+
+Install AWS CLI [SSM plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).
+
+```
+$ aws ec2 describe-instances --query "Reservations[].Instances[].InstanceId"
+$ aws ssm start-session --target <...instance-id...>
+```

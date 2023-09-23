@@ -1,2 +1,4 @@
 ---
-
+- name: Get password
+  ansible.builtin.debug:
+    msg: "{{ lookup('amazon.aws.aws_secret', 'squid_proxy_password', region='us-east-2') }}"

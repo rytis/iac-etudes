@@ -13,3 +13,7 @@ variable "vpc_cidr" {
 variable "instance_type" {
   type = string
 }
+
+variable "ami_name" {
+  type = string
+}
