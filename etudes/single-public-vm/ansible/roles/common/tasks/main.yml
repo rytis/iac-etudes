@@ -4,5 +4,6 @@
     name: "{{ item }}"
     state: present
   loop:
-    - ansible
-    - boto3
+    - ansible       # duh
+    - boto3         # needed by amazon.aws.*
+    - passlib       # needed by community.general.htpasswd

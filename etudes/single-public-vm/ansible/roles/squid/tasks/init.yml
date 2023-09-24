@@ -1,4 +1,19 @@
 ---
-- name: Get password
-  ansible.builtin.debug:
-    msg: "{{ lookup('amazon.aws.aws_secret', 'squid_proxy_password', region='us-east-2') }}"
+- name: Create Squid user for authentication
+  community.general.htpasswd:
+    path: /etc/squid/passwords
+    name: squid_user
+    password: "{{ lookup('amazon.aws.aws_secret', 'squid_proxy_password', region='us-east-2') }}"
+    owner: root
+    group: squid
+    mode: "0640"
+
+- name: Deploy Squid configuration
+  ansible.builtin.template:
+    src: squid.conf.j2
+    dest: /etc/squid/squid.conf
+    owner: root
+    group: squid
+    mode: "0640"
+  notify:
+    - Restart Squid

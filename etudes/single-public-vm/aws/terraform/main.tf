@@ -71,14 +71,14 @@ module "vpc" {
   map_public_ip_on_launch = true
 }
 
-# module "ssh_security_group" {
-#   source  = "terraform-aws-modules/security-group/aws//modules/ssh"
-#   version = "~> 5.0"
-#
-#   name                = "ssh-sg"
-#   ingress_cidr_blocks = ["0.0.0.0/0"]
-#   vpc_id              = module.vpc.vpc_id
-# }
+module "squid_security_group" {
+  source  = "terraform-aws-modules/security-group/aws//modules/squid"
+  version = "~> 5.0"
+
+  name                = "squid-sg"
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+  vpc_id              = module.vpc.vpc_id
+}
 
 module "vpc_endpoints" {
   source = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
@@ -156,6 +156,7 @@ module "server" {
   subnet_id     = module.vpc.public_subnets[0]
   vpc_security_group_ids = [
     module.vpc_endpoints.security_group_id,
+    module.squid_security_group.security_group_id,
   ]
   create_iam_instance_profile = true
   iam_role_name               = "ec2-server"
@@ -189,7 +190,10 @@ module "secrets_manager" {
     }
   }
 
-  create_random_password = true
-  random_password_length = 32
+  create_random_password           = true
+  random_password_length           = 32
+  random_password_override_special = ""
+
+  recovery_window_in_days = 0
 }
 

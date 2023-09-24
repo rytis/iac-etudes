@@ -63,6 +63,6 @@ Set up [port forwarding](https://aws.amazon.com/blogs/aws/new-port-forwarding-us
 Install AWS CLI [SSM plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html).
 
 ```
-$ aws ec2 describe-instances --query "Reservations[].Instances[].InstanceId"
+$ aws ec2 describe-instances --query "Reservations[].Instances[].[InstanceId,State.Name]"
 $ aws ssm start-session --target <...instance-id...>
 ```
