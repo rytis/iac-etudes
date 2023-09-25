@@ -164,6 +164,7 @@ module "server" {
     SSMCore         = data.aws_iam_policy.aws_ssm_core.arn
     CloudWatchAgent = data.aws_iam_policy.aws_cloudwatch_agent.arn
   }
+  user_data = templatefile("bootstrap.sh.tpl", {})
 }
 
 ###############################################################################
@@ -192,7 +193,7 @@ module "secrets_manager" {
 
   create_random_password           = true
   random_password_length           = 32
-  random_password_override_special = ""
+  random_password_override_special = "_"
 
   recovery_window_in_days = 0
 }
