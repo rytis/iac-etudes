@@ -102,8 +102,8 @@ module "vpc_endpoints" {
     }
   }
 
-  # Minimum set of enpoints that are needed for SSM to function
   endpoints = {
+    # Minimum set of enpoints that are needed for SSM to function
     s3 = {
       service         = "s3"
       service_type    = "Gateway"
@@ -137,8 +137,16 @@ module "vpc_endpoints" {
       subnet_ids          = module.vpc.public_subnets
       private_dns_enabled = true
     }
+    # Secrets manager endpoint to fetch configuration
     secretsmanager = {
       service             = "secretsmanager"
+      service_type        = "Interface"
+      subnet_ids          = module.vpc.public_subnets
+      private_dns_enabled = true
+    }
+    # CloudWatchLogs
+    cloudwatchlogs = {
+      service             = "logs"
       service_type        = "Interface"
       subnet_ids          = module.vpc.public_subnets
       private_dns_enabled = true
@@ -150,7 +158,8 @@ module "vpc_endpoints" {
 ## EC2 instance
 
 module "server" {
-  source        = "terraform-aws-modules/ec2-instance/aws"
+  source = "terraform-aws-modules/ec2-instance/aws"
+
   ami           = data.aws_ami.single_vm.id
   instance_type = var.instance_type
   subnet_id     = module.vpc.public_subnets[0]
@@ -158,12 +167,14 @@ module "server" {
     module.vpc_endpoints.security_group_id,
     module.squid_security_group.security_group_id,
   ]
+
   create_iam_instance_profile = true
   iam_role_name               = "ec2-server"
   iam_role_policies = {
     SSMCore         = data.aws_iam_policy.aws_ssm_core.arn
     CloudWatchAgent = data.aws_iam_policy.aws_cloudwatch_agent.arn
   }
+
   user_data = templatefile("bootstrap.sh.tpl", {})
 }
 
@@ -198,3 +209,26 @@ module "secrets_manager" {
   recovery_window_in_days = 0
 }
 
+###############################################################################
+## CloudWatch log groups and streams
+
+module "squid_proxy_log_group" {
+  source = "terraform-aws-modules/cloudwatch/aws//modules/log-group"
+
+  name              = "squid_proxy"
+  retention_in_days = 30
+}
+
+module "access_log_stream" {
+  source = "terraform-aws-modules/cloudwatch/aws//modules/log-stream"
+
+  name           = "access"
+  log_group_name = module.squid_proxy_log_group.cloudwatch_log_group_name
+}
+
+module "cache_log_stream" {
+  source = "terraform-aws-modules/cloudwatch/aws//modules/log-stream"
+
+  name           = "cache"
+  log_group_name = module.squid_proxy_log_group.cloudwatch_log_group_name
+}

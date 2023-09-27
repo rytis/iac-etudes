@@ -7,3 +7,21 @@
     - ansible       # duh
     - boto3         # needed by amazon.aws.*
     - passlib       # needed by community.general.htpasswd
+
+- name: Install additional packages
+  ansible.builtin.package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - amazon-cloudwatch-agent
+
+- name: Deploy CloudWatch configuration
+  ansible.builtin.template:
+    src: cloudwatch_squid_logs.json.j2
+    dest: /etc/amazon/amazon-cloudwatch-agent/amazon-cloudwatch-agent.d/logs.json
+    mode: "0644"
+
+- name: Enable CloudWatch service
+  ansible.builtin.service:
+    name: "amazon-cloudwatch-agent"
+    enabled: true
