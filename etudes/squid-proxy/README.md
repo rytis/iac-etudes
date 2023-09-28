@@ -52,6 +52,15 @@ If you need to access the temporary instance, run the following:
 $ ssh uc2-user@<ip of the temp instance as shown in packer output> -i ec2_squid-proxy.pem
 ```
 
+## Deploy everything
+
+In `terraform/`:
+
+```
+$ terraform init
+$ terraform apply
+```
+
 # Tips
 
 ## Access EC2 instance that is not on public network
