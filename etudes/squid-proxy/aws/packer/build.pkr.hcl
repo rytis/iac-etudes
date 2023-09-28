@@ -21,8 +21,8 @@ data "amazon-ami" "amazon_linux" {
   owners      = ["amazon"]
 }
 
-source "amazon-ebs" "single-public-vm" {
-  ami_name              = "single-public-vm"
+source "amazon-ebs" "squid-proxy" {
+  ami_name              = "squid-proxy"
   instance_type         = "t2.micro"
   region                = "us-east-2"
   source_ami            = data.amazon-ami.amazon_linux.id
@@ -32,8 +32,8 @@ source "amazon-ebs" "single-public-vm" {
 }
 
 build {
-  name    = "single-public-vm"
-  sources = ["source.amazon-ebs.single-public-vm"]
+  name    = "squid-proxy"
+  sources = ["source.amazon-ebs.squid-proxy"]
 
   provisioner "ansible" {
     playbook_file = "../../ansible/playbooks/build_image.yml"

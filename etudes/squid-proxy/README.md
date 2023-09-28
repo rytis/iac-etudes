@@ -49,7 +49,7 @@ $ ANSIBLE_ROLES_PATH=../../ansible/roles \
 If you need to access the temporary instance, run the following:
 
 ```
-$ ssh uc2-user@<ip of the temp instance as shown in packer output> -i ec2_single-public-vm.pem
+$ ssh uc2-user@<ip of the temp instance as shown in packer output> -i ec2_squid-proxy.pem
 ```
 
 # Tips
