@@ -113,7 +113,7 @@ module "mealie_service" {
 
       port_mappings = [
         {
-          name          = "mealie-container"   # must match container name
+          name          = "mealie-container" # must match container name
           containerPort = 80
           hostPort      = 80
           protocol      = "tcp"
@@ -123,7 +123,10 @@ module "mealie_service" {
   }
 
   subnet_ids = module.vpc.private_subnets
-  # assign_public_ip = true
+
+  desired_count = 3
+  autoscaling_min_capacity = 3
+  autoscaling_max_capacity = 6
 
   security_group_rules = {
     # allow all outbound connections, needed to pull images from dockerhub
@@ -148,7 +151,7 @@ module "mealie_service" {
   load_balancer = {
     service = {
       target_group_arn = module.mealie_alb.target_group_arns[0]
-      container_name   = "mealie-container"    # must match container name
+      container_name   = "mealie-container" # must match container name
       container_port   = 80
     }
   }
