@@ -93,6 +93,23 @@ module "mealie_frontend_service" {
   autoscaling_min_capacity = 3
   autoscaling_max_capacity = 6
 
+  enable_execute_command = true
+  # add policy to allow access to ssm, which is needed for ecs exec to function
+  # the policy is added to task role, do not confuse with `task_exec_iam_statements`
+  # which is a role used to execute task (and not the role assumed by running task)
+  tasks_iam_role_statements = {
+    ssm = {
+      actions = [
+        "ssmmessages:CreateControlChannel",
+        "ssmmessages:CreateDataChannel",
+        "ssmmessages:OpenControlChannel",
+        "ssmmessages:OpenDataChannel"
+      ]
+      resources = ["*"]
+      effect    = "Allow"
+    }
+  }
+
   security_group_rules = {
     # allow all outbound connections, needed to pull images from dockerhub
     # for images hosted on ecr prefereably use VPC endpoint to ECR
