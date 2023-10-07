@@ -84,6 +84,13 @@ module "mealie_frontend_service" {
           protocol      = "tcp"
         }
       ]
+
+      secrets = [
+        {
+          name      = "DB_PASSWORD"
+          valueFrom = "${var.db_secret_arn}:password::"
+        }
+      ]
     }
   }
 

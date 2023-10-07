@@ -48,15 +48,16 @@ module "vpc" {
 module "mealie_frontend" {
   source = "./modules/frontend"
 
-  vpc = module.vpc
+  vpc           = module.vpc
+  db_secret_arn = module.mealie_db.db_secret_arn
 }
 
 ###############################################################################
 ## Database
 
-# module "mealie_db" {
-#   source = "./modules/db"
-#
-#   vpc = module.vpc
-# }
+module "mealie_db" {
+  source = "./modules/db"
+
+  vpc = module.vpc
+}
 
