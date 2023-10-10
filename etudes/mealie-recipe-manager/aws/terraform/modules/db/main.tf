@@ -71,6 +71,10 @@ module "db_secret" {
   secret_string = jsonencode({
     username = local.db_username
     password = local.db_password
+    name     = module.db.db_instance_name
+    endpoint = module.db.db_instance_endpoint
+    port     = module.db.db_instance_port
+    address  = module.db.db_instance_address
   })
 
 }

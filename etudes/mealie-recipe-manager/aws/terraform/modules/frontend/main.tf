@@ -97,7 +97,23 @@ module "mealie_frontend_service" {
         {
           name      = "DB_USERNAME"
           valueFrom = "${var.db_secret_arn}:username::"
-        }
+        },
+        {
+          name      = "DB_NAME"
+          valueFrom = "${var.db_secret_arn}:name::"
+        },
+        {
+          name      = "DB_ENDPOINT"
+          valueFrom = "${var.db_secret_arn}:endpoint::"
+        },
+        {
+          name      = "DB_PORT"
+          valueFrom = "${var.db_secret_arn}:port::"
+        },
+        {
+          name      = "DB_ADDRESS"
+          valueFrom = "${var.db_secret_arn}:address::"
+        },
       ]
     }
   }
