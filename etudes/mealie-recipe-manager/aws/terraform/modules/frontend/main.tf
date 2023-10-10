@@ -45,6 +45,8 @@ module "frontend_alb" {
       target_type      = "ip"
     }
   ]
+
+  create_lb = false
 }
 
 ###############################################################################
@@ -74,7 +76,9 @@ module "mealie_frontend_service" {
       essential                = true
       readonly_root_filesystem = false
 
-      image = "docker.io/nginx"
+      # image = "docker.io/nginx"
+      image   = "docker.io/fedora"
+      command = ["sleep", "infinity"]
 
       port_mappings = [
         {
@@ -89,6 +93,10 @@ module "mealie_frontend_service" {
         {
           name      = "DB_PASSWORD"
           valueFrom = "${var.db_secret_arn}:password::"
+        },
+        {
+          name      = "DB_USERNAME"
+          valueFrom = "${var.db_secret_arn}:username::"
         }
       ]
     }
@@ -96,9 +104,9 @@ module "mealie_frontend_service" {
 
   subnet_ids = local.vpc.private_subnets
 
-  desired_count            = 3
-  autoscaling_min_capacity = 3
-  autoscaling_max_capacity = 6
+  #   desired_count            = 3
+  #   autoscaling_min_capacity = 3
+  #   autoscaling_max_capacity = 6
 
   enable_execute_command = true
   # add policy to allow access to ssm, which is needed for ecs exec to function
@@ -137,12 +145,12 @@ module "mealie_frontend_service" {
     }
   }
 
-  load_balancer = {
-    service = {
-      target_group_arn = module.frontend_alb.target_group_arns[0]
-      container_name   = "mealie-frontend" # must match container name
-      container_port   = 80
-    }
-  }
+  #   load_balancer = {
+  #     service = {
+  #       target_group_arn = module.frontend_alb.target_group_arns[0]
+  #       container_name   = "mealie-frontend" # must match container name
+  #       container_port   = 80
+  #     }
+  #   }
 }
 
