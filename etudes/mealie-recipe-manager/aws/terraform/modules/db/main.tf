@@ -15,12 +15,16 @@ module "db" {
   instance_class       = "db.t4g.micro"
   allocated_storage    = 20
 
-  db_name                     = "mealie"
-  port                        = 5432
-  username                    = local.db_username
-  password                    = local.db_password
+  db_name  = "mealie"
+  port     = 5432
+  username = local.db_username
+  password = local.db_password
+
+  # disable, as we're managing the password ourselves
+  # otherwise RDS will create one and store in secrets manager
   manage_master_user_password = false
 
+  # mealie uses username/password to authenticate, and not an IAM token
   iam_database_authentication_enabled = false
 
   enabled_cloudwatch_logs_exports = ["postgresql"]
