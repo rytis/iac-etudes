@@ -46,7 +46,7 @@ module "frontend_alb" {
     }
   ]
 
-  create_lb = false
+  # create_lb = false
 }
 
 ###############################################################################
@@ -77,8 +77,9 @@ module "mealie_frontend_service" {
       readonly_root_filesystem = false
 
       # image = "docker.io/nginx"
-      image   = "docker.io/fedora"
-      command = ["sleep", "infinity"]
+      #       image   = "docker.io/fedora"
+      #       command = ["sleep", "infinity"]
+      image = "docker.io/hkotel/mealie"
 
       port_mappings = [
         {
@@ -98,22 +99,22 @@ module "mealie_frontend_service" {
           name      = "DB_USERNAME"
           valueFrom = "${var.db_secret_arn}:username::"
         },
-        {
-          name      = "DB_NAME"
-          valueFrom = "${var.db_secret_arn}:name::"
-        },
-        {
-          name      = "DB_ENDPOINT"
-          valueFrom = "${var.db_secret_arn}:endpoint::"
-        },
-        {
-          name      = "DB_PORT"
-          valueFrom = "${var.db_secret_arn}:port::"
-        },
-        {
-          name      = "DB_ADDRESS"
-          valueFrom = "${var.db_secret_arn}:address::"
-        },
+        #        {
+        #          name      = "DB_NAME"
+        #          valueFrom = "${var.db_secret_arn}:name::"
+        #        },
+        #        {
+        #          name      = "DB_ENDPOINT"
+        #          valueFrom = "${var.db_secret_arn}:endpoint::"
+        #        },
+        #        {
+        #          name      = "DB_PORT"
+        #          valueFrom = "${var.db_secret_arn}:port::"
+        #        },
+        #        {
+        #          name      = "DB_ADDRESS"
+        #          valueFrom = "${var.db_secret_arn}:address::"
+        #        },
       ]
     }
   }
@@ -161,12 +162,12 @@ module "mealie_frontend_service" {
     }
   }
 
-  #   load_balancer = {
-  #     service = {
-  #       target_group_arn = module.frontend_alb.target_group_arns[0]
-  #       container_name   = "mealie-frontend" # must match container name
-  #       container_port   = 80
-  #     }
-  #   }
+  load_balancer = {
+    api = {
+      target_group_arn = module.frontend_alb.target_group_arns[0]
+      container_name   = "mealie-frontend" # must match container name
+      container_port   = 80
+    }
+  }
 }
 
