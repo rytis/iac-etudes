@@ -35,8 +35,6 @@ module "db" {
   vpc_security_group_ids = [module.ecs_private_sg.security_group_id]
 
   ca_cert_identifier = "rds-ca-ecc384-g1" # otherwise will default to soon-to-expire 2019 CA
-
-  create_db_instance = false
 }
 
 module "ecs_private_sg" {

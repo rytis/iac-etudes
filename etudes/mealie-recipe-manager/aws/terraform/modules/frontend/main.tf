@@ -1,5 +1,6 @@
 locals {
-  vpc = var.vpc
+  vpc              = var.vpc
+  application_port = 9000
 }
 
 ###############################################################################
@@ -21,7 +22,7 @@ module "alb_sg" {
 module "frontend_alb" {
   source = "terraform-aws-modules/alb/aws"
 
-  name = "mealie-frontend"
+  name_prefix = "fe-"
 
   load_balancer_type = "application"
 
@@ -39,9 +40,9 @@ module "frontend_alb" {
 
   target_groups = [
     {
-      name             = "mealie-frontend"
+      name_prefix      = "fe-"
       backend_protocol = "HTTP"
-      backend_port     = 80
+      backend_port     = local.application_port
       target_type      = "ip"
     }
   ]
@@ -76,45 +77,47 @@ module "mealie_frontend_service" {
       essential                = true
       readonly_root_filesystem = false
 
-      # image = "docker.io/nginx"
-      #       image   = "docker.io/fedora"
-      #       command = ["sleep", "infinity"]
-      image = "docker.io/hkotel/mealie"
+      # image   = "docker.io/fedora"
+      # command = ["sleep", "infinity"]
+      image = "ghcr.io/mealie-recipes/mealie:nightly"
 
       port_mappings = [
         {
           name          = "mealie-frontend" # must match container name
-          containerPort = 80
-          hostPort      = 80
+          containerPort = local.application_port
+          hostPort      = local.application_port
           protocol      = "tcp"
+        }
+      ]
+
+      environment = [
+        {
+          name  = "DB_ENGINE"
+          value = "postgres"
         }
       ]
 
       secrets = [
         {
-          name      = "DB_PASSWORD"
+          name      = "POSTGRES_PASSWORD"
           valueFrom = "${var.db_secret_arn}:password::"
         },
         {
-          name      = "DB_USERNAME"
+          name      = "POSTGRES_USER"
           valueFrom = "${var.db_secret_arn}:username::"
         },
-        #        {
-        #          name      = "DB_NAME"
-        #          valueFrom = "${var.db_secret_arn}:name::"
-        #        },
-        #        {
-        #          name      = "DB_ENDPOINT"
-        #          valueFrom = "${var.db_secret_arn}:endpoint::"
-        #        },
-        #        {
-        #          name      = "DB_PORT"
-        #          valueFrom = "${var.db_secret_arn}:port::"
-        #        },
-        #        {
-        #          name      = "DB_ADDRESS"
-        #          valueFrom = "${var.db_secret_arn}:address::"
-        #        },
+        {
+          name      = "POSTGRES_DB"
+          valueFrom = "${var.db_secret_arn}:name::"
+        },
+        {
+          name      = "POSTGRES_PORT"
+          valueFrom = "${var.db_secret_arn}:port::"
+        },
+        {
+          name      = "POSTGRES_SERVER"
+          valueFrom = "${var.db_secret_arn}:address::"
+        },
       ]
     }
   }
@@ -155,8 +158,8 @@ module "mealie_frontend_service" {
     # allow connection from the loadbalancer (source: alb sg)
     alb_ingress_80 = {
       type                     = "ingress"
-      from_port                = 80
-      to_port                  = 80
+      from_port                = local.application_port
+      to_port                  = local.application_port
       protocol                 = "tcp"
       source_security_group_id = module.alb_sg.security_group_id
     }
@@ -166,7 +169,7 @@ module "mealie_frontend_service" {
     api = {
       target_group_arn = module.frontend_alb.target_group_arns[0]
       container_name   = "mealie-frontend" # must match container name
-      container_port   = 80
+      container_port   = local.application_port
     }
   }
 }
