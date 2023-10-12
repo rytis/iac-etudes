@@ -51,6 +51,25 @@ module "frontend_alb" {
 }
 
 ###############################################################################
+## EFS
+
+module "frontend_efs" {
+  source = "terraform-aws-modules/efs/aws"
+
+  name = "mealie-data"
+
+  mount_targets = { for k, v in zipmap(local.vpc.azs, local.vpc.private_subnets) : k => { subnet_id = v } }
+
+  security_group_vpc_id = local.vpc.vpc_id
+  security_group_rules = {
+    vpc = {
+      cidr_blocks = local.vpc.private_subnets_cidr_blocks
+    }
+  }
+
+}
+
+###############################################################################
 ## ECS
 
 module "ecs_cluster" {
@@ -68,6 +87,21 @@ module "mealie_frontend_service" {
 
   name        = "mealie-service"
   cluster_arn = module.ecs_cluster.arn
+
+  # by default efs module will create fs policy that prevents
+  # non encrypted connections, therefore we need to enable
+  # transit_encryption and also set IAM authentication
+  volume = {
+    mealie_data = {
+      efs_volume_configuration = {
+        file_system_id     = module.frontend_efs.id
+        transit_encryption = "ENABLED"
+        authorization_config = {
+          "iam" = "ENABLED"
+        }
+      }
+    }
+  }
 
   container_definitions = {
     mealie = {
@@ -129,6 +163,7 @@ module "mealie_frontend_service" {
   #   autoscaling_max_capacity = 6
 
   enable_execute_command = true
+
   # add policy to allow access to ssm, which is needed for ecs exec to function
   # the policy is added to task role, do not confuse with `task_exec_iam_statements`
   # which is a role used to execute task (and not the role assumed by running task)
@@ -143,6 +178,13 @@ module "mealie_frontend_service" {
       resources = ["*"]
       effect    = "Allow"
     }
+  }
+
+  # attach EFS client policy so that we're allowed to mount
+  # without this we'd get permission denied
+  # and it needs to be tasks role and not task exec role
+  tasks_iam_role_policies = {
+    esf = data.aws_iam_policy.efs.arn
   }
 
   security_group_rules = {
@@ -174,3 +216,6 @@ module "mealie_frontend_service" {
   }
 }
 
+data "aws_iam_policy" "efs" {
+  name = "AmazonElasticFileSystemClientFullAccess"
+}
