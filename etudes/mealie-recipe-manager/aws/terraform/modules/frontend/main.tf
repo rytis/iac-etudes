@@ -89,10 +89,10 @@ module "mealie_frontend_service" {
   cluster_arn = module.ecs_cluster.arn
 
   # by default efs module will create fs policy that prevents
-  # non encrypted connections, therefore we need to enable
+  # non encrypted connections, therefore we need to ENABLE
   # transit_encryption and also set IAM authentication
   volume = {
-    mealie_data = {
+    mealie_data = { # the volume will be named "mealie_data", so we'll need to reference it by that name
       efs_volume_configuration = {
         file_system_id     = module.frontend_efs.id
         transit_encryption = "ENABLED"
@@ -114,6 +114,13 @@ module "mealie_frontend_service" {
       # image   = "docker.io/fedora"
       # command = ["sleep", "infinity"]
       image = "ghcr.io/mealie-recipes/mealie:nightly"
+
+      mount_points = [
+        {
+          sourceVolume  = "mealie_data" # literal string matching volume name in `volume {...}` definition
+          containerPath = "/app/data"
+        }
+      ]
 
       port_mappings = [
         {
@@ -158,9 +165,9 @@ module "mealie_frontend_service" {
 
   subnet_ids = local.vpc.private_subnets
 
-  #   desired_count            = 3
-  #   autoscaling_min_capacity = 3
-  #   autoscaling_max_capacity = 6
+  desired_count            = 3
+  autoscaling_min_capacity = 3
+  autoscaling_max_capacity = 9
 
   enable_execute_command = true
 
