@@ -1,7 +1,20 @@
+###############################################################################
+## Init
+
 locals {
   db_username = "mealie"
   db_password = random_password.db_password.result
 }
+
+data "aws_caller_identity" "this" {}
+
+resource "random_password" "db_password" {
+  length  = 32
+  special = false
+}
+
+###############################################################################
+## RDS
 
 module "db" {
   source = "terraform-aws-modules/rds/aws"
@@ -51,6 +64,9 @@ module "ecs_private_sg" {
   ingress_rules       = ["postgresql-tcp"]
 }
 
+###############################################################################
+## Secrets
+
 module "db_secret" {
   source = "terraform-aws-modules/secrets-manager/aws"
 
@@ -83,9 +99,3 @@ module "db_secret" {
 
 }
 
-data "aws_caller_identity" "this" {}
-
-resource "random_password" "db_password" {
-  length  = 32
-  special = false
-}

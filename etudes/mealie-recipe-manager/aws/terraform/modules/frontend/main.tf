@@ -1,6 +1,13 @@
+###############################################################################
+## Init
+
 locals {
   vpc              = var.vpc
   application_port = 9000
+}
+
+data "aws_iam_policy" "efs" {
+  name = "AmazonElasticFileSystemClientFullAccess"
 }
 
 ###############################################################################
@@ -46,8 +53,6 @@ module "frontend_alb" {
       target_type      = "ip"
     }
   ]
-
-  # create_lb = false
 }
 
 ###############################################################################
@@ -221,8 +226,4 @@ module "mealie_frontend_service" {
       container_port   = local.application_port
     }
   }
-}
-
-data "aws_iam_policy" "efs" {
-  name = "AmazonElasticFileSystemClientFullAccess"
 }
