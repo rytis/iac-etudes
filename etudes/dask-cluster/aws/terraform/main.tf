@@ -41,3 +41,13 @@ module "vpc" {
   enable_nat_gateway = true
   single_nat_gateway = true
 }
+
+###############################################################################
+## Dask cluster
+
+module "dask_cluster" {
+  source = "./modules/dask_cluster"
+
+  vpc = module.vpc
+}
+
