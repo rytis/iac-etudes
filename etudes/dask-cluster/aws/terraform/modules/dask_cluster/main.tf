@@ -44,9 +44,15 @@ module "dask_scheduler_service" {
 
       port_mappings = [
         {
-          name          = "dask-scheduler" # must match container name
+          name          = "dask-scheduler-ui"
           containerPort = 8787
           hostPort      = 8787
+          protocol      = "tcp"
+        },
+        {
+          name          = "dask-scheduler"
+          containerPort = 8786
+          hostPort      = 8786
           protocol      = "tcp"
         }
       ]
@@ -57,7 +63,7 @@ module "dask_scheduler_service" {
     enabled = true
     service = {
       client_alias = {
-        port     = 8787
+        port     = 8786
         dns_name = "scheduler"
       }
       port_name      = "dask-scheduler"
@@ -97,10 +103,10 @@ module "dask_scheduler_service" {
     }
     ingress_all = {
       type        = "ingress"
-      from_port   = 8787
-      to_port     = 8787
+      from_port   = 0
+      to_port     = 0
       protocol    = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
+      cidr_blocks = var.vpc.private_subnets_cidr_blocks
     }
   }
 }
@@ -128,8 +134,18 @@ module "dask_worker_service" {
       essential                = true
       readonly_root_filesystem = false
 
-      image   = "docker.io/fedora"
-      command = ["sleep", "infinity"]
+      # image   = "docker.io/fedora"
+      # command = ["sleep", "infinity"]
+
+      image = "ghcr.io/dask/dask:latest"
+      command = [
+        "dask",
+        "worker",
+        "scheduler:8786",
+        "--memory-limit", "2048MB",
+        "--worker-port", "9000",
+        "--nanny-port", "9001"
+      ]
     }
   }
 
@@ -162,6 +178,13 @@ module "dask_worker_service" {
       to_port     = 0
       protocol    = "-1"
       cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress_all = {
+      type        = "ingress"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = var.vpc.private_subnets_cidr_blocks
     }
   }
 }
