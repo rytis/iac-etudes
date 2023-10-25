@@ -141,6 +141,17 @@ module "dask_worker_service" {
       # command = ["sleep", "infinity"]
 
       image = "ghcr.io/dask/dask:latest"
+
+      # when dask worker starts it checks what interface/address to use when connecting to the scheduler.
+      # in this instance scheduler is made available via Service Connect. Service Connect works by running
+      # proxy in a sidecar container. sidecar container gets loopback address assigned to it
+      # (such as 127.255.0.1 or similar), which means that by default worker process will bind to
+      # loopback address on the worker instance (127.0.0.1). the worker then advertises that address
+      # to the scheduler, and obviously the scheduler will not be able to connect back to the worker
+      # (and also all workers will be masked behind the same 127.0.0.1 address).
+      # therefore we set --host option explicitly to the primary interface on the container, which is
+      # accessible from the scheduler. any outgoing connections will still be correctly routed to
+      # the Serivce Connect proxy.
       command = [
         "/bin/bash",
         "-c",
