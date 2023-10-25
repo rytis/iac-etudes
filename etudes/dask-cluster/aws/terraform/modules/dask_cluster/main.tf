@@ -126,6 +126,9 @@ module "dask_worker_service" {
 
   depends_on = [module.dask_scheduler_service]
 
+  desired_count            = 3
+  autoscaling_min_capacity = 3
+
   container_definitions = {
     dask_scheduler = {
       name                     = "dask-worker"
@@ -139,12 +142,9 @@ module "dask_worker_service" {
 
       image = "ghcr.io/dask/dask:latest"
       command = [
-        "dask",
-        "worker",
-        "scheduler:8786",
-        "--memory-limit", "2048MB",
-        "--worker-port", "9000",
-        "--nanny-port", "9001"
+        "/bin/bash",
+        "-c",
+        "dask worker scheduler:8786 --memory-limit 2048MB --worker-port 9000 --nanny-port 9001 --host $(hostname)",
       ]
     }
   }
