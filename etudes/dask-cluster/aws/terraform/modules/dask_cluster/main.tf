@@ -64,11 +64,18 @@ module "dask_scheduler_service" {
     service = {
       client_alias = {
         port     = 8786
-        dns_name = "scheduler"
+        dns_name = "scheduler-service"
       }
       port_name      = "dask-scheduler"
-      discovery_name = "scheduler"
+      discovery_name = "scheduler-service"
     }
+  }
+
+  service_registries = {
+    #container_name = "dask-scheduler"
+    #container_port = 8786
+    #port         = 8786
+    registry_arn = aws_service_discovery_service.dask_scheduler.arn
   }
 
   subnet_ids = var.vpc.private_subnets
@@ -126,8 +133,9 @@ module "dask_worker_service" {
 
   depends_on = [module.dask_scheduler_service]
 
-  desired_count            = 3
-  autoscaling_min_capacity = 3
+  desired_count            = 1
+  autoscaling_min_capacity = 1
+  autoscaling_max_capacity = 9
 
   container_definitions = {
     dask_scheduler = {
@@ -155,7 +163,7 @@ module "dask_worker_service" {
       command = [
         "/bin/bash",
         "-c",
-        "dask worker scheduler:8786 --memory-limit 2048MB --worker-port 9000 --nanny-port 9001 --host $(hostname)",
+        "dask worker scheduler-service:8786 --memory-limit 2048MB --worker-port 9000 --nanny-port 9001 --host $(hostname)",
       ]
     }
   }
@@ -197,5 +205,22 @@ module "dask_worker_service" {
       protocol    = "-1"
       cidr_blocks = var.vpc.private_subnets_cidr_blocks
     }
+  }
+}
+
+resource "aws_service_discovery_service" "dask_scheduler" {
+  name = "scheduler"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.this.id
+
+    dns_records {
+      ttl  = 5
+      type = "A"
+    }
+  }
+
+  health_check_custom_config {
+    failure_threshold = 5
   }
 }
