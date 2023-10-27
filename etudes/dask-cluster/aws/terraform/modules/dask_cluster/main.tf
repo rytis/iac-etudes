@@ -31,11 +31,13 @@ module "dask_scheduler_service" {
   name        = "dask-scheduler-service"
   cluster_arn = module.ecs_cluster.arn
 
+  memory = 4096
+
   container_definitions = {
     dask_scheduler = {
       name                     = "dask-scheduler"
       cpu                      = 512
-      memory                   = 2048
+      memory                   = 4096
       essential                = true
       readonly_root_filesystem = false
 
@@ -72,9 +74,6 @@ module "dask_scheduler_service" {
   }
 
   service_registries = {
-    #container_name = "dask-scheduler"
-    #container_port = 8786
-    #port         = 8786
     registry_arn = aws_service_discovery_service.dask_scheduler.arn
   }
 
@@ -131,6 +130,8 @@ module "dask_worker_service" {
     enabled = true
   }
 
+  memory = 4096
+
   depends_on = [module.dask_scheduler_service]
 
   desired_count            = 1
@@ -141,7 +142,7 @@ module "dask_worker_service" {
     dask_scheduler = {
       name                     = "dask-worker"
       cpu                      = 512
-      memory                   = 2048
+      memory                   = 4096
       essential                = true
       readonly_root_filesystem = false
 
