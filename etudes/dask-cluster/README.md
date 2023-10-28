@@ -15,6 +15,32 @@ $ terraform init
 $ terraform apply
 ```
 
+## Running jobs on the cluster
+
+### From local workstation
+
+To run jobs on the remote cluster you need to set up port forwarding to Dask scheduler task (see "Tips" section)
+on port 8786 (scheduler port).
+
+Once port forwarding is enabled, connect to the Dask cluster using workstation IP and Port:
+
+```
+import distributed
+import dask.dataframe as dd
+
+
+def main():
+    client = distributed.Client("tcp://127.0.0.1:8786")
+    print(client)
+    df = dd.read_parquet('https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_2023-07.parquet',
+                         parse_dates=['tpep_pickup_datetime', 'tpep_dropoff_datetime'])
+    print(len(df))
+
+
+if __name__ == "__main__":
+    main()
+```
+
 # Tips
 
 ## Port forward to container

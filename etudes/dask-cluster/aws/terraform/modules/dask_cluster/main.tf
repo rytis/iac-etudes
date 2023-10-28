@@ -58,6 +58,13 @@ module "dask_scheduler_service" {
           protocol      = "tcp"
         }
       ]
+
+      environment = [
+        {
+          name  = "EXTRA_PIP_PACKAGES"
+          value = "aiohttp"
+        }
+      ]
     }
   }
 
@@ -165,6 +172,13 @@ module "dask_worker_service" {
         "/bin/bash",
         "-c",
         "dask worker scheduler-service:8786 --memory-limit 2048MB --worker-port 9000 --nanny-port 9001 --host $(hostname)",
+      ]
+
+      environment = [
+        {
+          name  = "EXTRA_PIP_PACKAGES"
+          value = "aiohttp"
+        }
       ]
     }
   }
