@@ -61,4 +61,14 @@ module "sagemaker_notebook" {
   security_group = module.dask_cluster.dask_worker_security_group_id
 }
 
+###############################################################################
+## Data store
+
+module "data_store" {
+  source = "./modules/data_store"
+
+  region            = var.region
+  notebook_role_arn = module.sagemaker_notebook.notebook_role_arn
+}
+
 
