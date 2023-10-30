@@ -46,5 +46,11 @@ resource "aws_sagemaker_notebook_instance" "this" {
   subnet_id              = var.vpc.private_subnets[0]
   security_groups        = [var.security_group]
   direct_internet_access = "Disabled"
+  lifecycle_config_name  = aws_sagemaker_notebook_instance_lifecycle_configuration.this.name
 }
 
+resource "aws_sagemaker_notebook_instance_lifecycle_configuration" "this" {
+  name      = "dask-notebook-instance"
+  on_start  = filebase64("${path.module}/on_start.sh")
+  on_create = filebase64("${path.module}/on_create.sh")
+}
