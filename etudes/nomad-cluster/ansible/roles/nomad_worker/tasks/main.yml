@@ -1,0 +1,14 @@
+- name: Get settings from env vars
+  ansible.builtin.set_fact:
+    _nomad_server_autojoin_string: "{{ lookup('ansible.builtin.env', 'ANS_CI_NOMAD_CLUSTER_AUTOJOIN_STR') | default('', true) }}"
+
+- name: Deploy nomad configuration
+  ansible.builtin.template:
+    src: nomad.hcl.tpl
+    dest: /etc/nomad.d/nomad.hcl
+
+- name: Enable and start nomad service
+  ansible.builtin.service:
+    name: nomad
+    enabled: yes
+    state: started

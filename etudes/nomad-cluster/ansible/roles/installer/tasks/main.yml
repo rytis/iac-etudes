@@ -1,0 +1,4 @@
+- name: Copy ansible code
+  ansible.builtin.copy:
+    src: ../../ansible
+    dest: /var/tmp
