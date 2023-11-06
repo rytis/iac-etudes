@@ -57,20 +57,3 @@ variable "nomad_worker_ami_name" {
   type    = string
   default = "nomad-2023-07"
 }
-
-# variable "vault_server_tags" {
-#   type = map(string)
-#   default = {
-#     vault-autojoin = "yes"
-#   }
-# }
-#
-# variable "vault_cloud_autojoin_string" {
-#   type = string
-#   default = "provider=aws tag_key=vault-autojoin tag_value=yes"
-# }
-#
-# variable "vault_server_ami_name" {
-#   type = string
-#   default = "vault-2023-07"
-# }

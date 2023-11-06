@@ -1,0 +1,3 @@
+variable "nomad_address" {
+
+}

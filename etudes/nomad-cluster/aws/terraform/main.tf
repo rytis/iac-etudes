@@ -26,19 +26,6 @@ module "nomad_security_group" {
   vpc_id = module.vpc.vpc_id
 }
 
-module "vault_security_group" {
-  source  = "terraform-aws-modules/security-group/aws//modules/vault"
-  version = "~> 5.0"
-
-  name = "vault-sg"
-  ingress_cidr_blocks = concat(
-    module.vpc.public_subnets_cidr_blocks,
-    module.vpc.private_subnets_cidr_blocks,
-    ["0.0.0.0/0"]
-  )
-  vpc_id = module.vpc.vpc_id
-}
-
 module "ssh_security_group" {
   source  = "terraform-aws-modules/security-group/aws//modules/ssh"
   version = "~> 5.0"
@@ -119,4 +106,10 @@ module "nomad_worker_pool" {
   autojoin_string = var.nomad_cloud_autojoin_string
 
   ssh_key_name = module.ssh_key.key_name
+}
+
+module "cluster_configuration" {
+  source = "./modules/cluster_services"
+
+  nomad_address = "http://${module.nomad_ui_lb.elb_dns_name}/"
 }
