@@ -2,6 +2,10 @@ provider "aws" {
   region = "us-east-2"
 }
 
+provider "nomad" {
+  address = "http://${module.nomad_ui_lb.elb_dns_name}/"
+}
+
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -94,7 +98,7 @@ module "nomad_control_plane" {
 module "nomad_worker_pool" {
   source = "./modules/nomad_worker_pool"
 
-  depends_on = [ module.nomad_control_plane ]
+  #  depends_on = [module.nomad_control_plane]
 
   ami_name = var.nomad_worker_ami_name
   subnets  = module.vpc.private_subnets
@@ -115,7 +119,5 @@ module "cluster_configuration" {
 
   # explicitly set dependency, because terraform has no other indication
   # that job resources need to be removed before the worker nodes
-  depends_on = [ module.nomad_worker_pool ]
-
-  nomad_address = "http://${module.nomad_ui_lb.elb_dns_name}/"
+  depends_on = [module.nomad_ui_lb]
 }

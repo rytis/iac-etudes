@@ -14,4 +14,8 @@ client {
       "{{ _nomad_server_autojoin_string }}"
     ]
   }
+  options {
+    "docker.privileged.enabled" = "true"
+    "driver.raw_exec.enable" = "1"
+  }
 }

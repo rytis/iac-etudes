@@ -16,4 +16,8 @@ server {
 client {
   enabled = true
   servers = ["127.0.0.1"]
+  options {
+    "docker.privileged.enabled" = "true"
+    "driver.raw_exec.enable" = "1"
+  }
 }

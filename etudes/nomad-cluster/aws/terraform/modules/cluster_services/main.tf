@@ -1,7 +1,3 @@
-provider "nomad" {
-  address = var.nomad_address
-}
-
 resource "nomad_job" "test" {
   jobspec = <<EOT
 
@@ -20,3 +16,6 @@ job "sleep_job" {
 EOT
 }
 
+resource "nomad_job" "efs_plugin" {
+  jobspec = file("${path.module}/efs_csi_jobspec.hcl")
+}

@@ -1,3 +1,2 @@
-variable "nomad_address" {
 
-}
+
