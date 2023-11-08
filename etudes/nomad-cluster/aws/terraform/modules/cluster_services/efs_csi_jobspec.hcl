@@ -35,7 +35,7 @@ job "plugin-efs" {
         id             = "aws-efs0"
         type           = "node"
         mount_dir      = "/csi"  # this path /csi matches the --endpoint
-                            # argument for the container
+                                 # argument for the container
         health_timeout = "30s"
       }
     }

@@ -114,10 +114,36 @@ module "nomad_worker_pool" {
   ssh_key_name = module.ssh_key.key_name
 }
 
+module "efs_volume" {
+  source = "terraform-aws-modules/efs/aws"
+
+  name = "nomad-data"
+
+  mount_targets = { for k, v in zipmap(module.vpc.azs, module.vpc.private_subnets) : k => { subnet_id = v } }
+
+  security_group_vpc_id = module.vpc.vpc_id
+  security_group_rules = {
+    vpc = {
+      cidr_blocks = module.vpc.private_subnets_cidr_blocks
+    }
+  }
+}
+
+resource "time_sleep" "wait_60s" {
+  depends_on       = [module.nomad_ui_lb]
+  create_duration  = "60s"
+  destroy_duration = "60s"
+}
+
 module "cluster_configuration" {
   source = "./modules/cluster_services"
 
-  # explicitly set dependency, because terraform has no other indication
-  # that job resources need to be removed before the worker nodes
-  depends_on = [module.nomad_ui_lb]
+  # it takes a short amount of time for LB DNS to actually become
+  # available after it is created, so we just need to wait before
+  # contacting Nomand API, which is used to create cluster configuration
+  depends_on = [
+    time_sleep.wait_60s
+  ]
+
+  efs_volume = module.efs_volume
 }

@@ -1,2 +1,5 @@
 
+variable "efs_volume" {
+
+}
 

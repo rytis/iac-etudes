@@ -30,6 +30,7 @@ module "nomad_worker" {
     NomadClusterAutodiscovery = aws_iam_policy.nomad_cluster_auto_discovery.arn
     SSMCore                   = data.aws_iam_policy.aws_ssm_core.arn
     CloudWatchAgent           = data.aws_iam_policy.aws_cloudwatch_agent.arn
+    EFS                       = data.aws_iam_policy.aws_efs_full.arn
   }
 
   user_data = templatefile("${path.module}/worker-bootstrap.sh", {
@@ -68,3 +69,8 @@ data "aws_iam_policy" "aws_ssm_core" {
 data "aws_iam_policy" "aws_cloudwatch_agent" {
   name = "CloudWatchAgentServerPolicy"
 }
+
+data "aws_iam_policy" "aws_efs_full" {
+  name = "AmazonElasticFileSystemClientFullAccess"
+}
+

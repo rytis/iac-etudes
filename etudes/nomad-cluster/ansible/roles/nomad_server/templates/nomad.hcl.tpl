@@ -14,7 +14,7 @@ server {
 }
 
 client {
-  enabled = true
+  enabled = false
   servers = ["127.0.0.1"]
   options {
     "docker.privileged.enabled" = "true"
