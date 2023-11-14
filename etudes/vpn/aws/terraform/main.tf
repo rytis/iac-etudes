@@ -43,6 +43,7 @@ module "vpc" {
 module "client_vpn" {
   source = "./modules/client"
 
-  vpc = module.vpc
+  vpc         = module.vpc
+  client_cidr = var.client_cidr
 }
 

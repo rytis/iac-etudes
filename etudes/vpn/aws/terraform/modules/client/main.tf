@@ -101,18 +101,8 @@ resource "aws_acm_certificate" "client" {
   certificate_chain = tls_self_signed_cert.ca.cert_pem
 }
 
-resource "local_sensitive_file" "client_key" {
-  content  = tls_private_key.client.private_key_pem
-  filename = "${path.module}/client.key"
-}
-
-resource "local_file" "client_key" {
-  content  = tls_locally_signed_cert.client.cert_pem
-  filename = "${path.module}/client.cert"
-}
-
 ##############################################################################
-##
+## Client VPN
 
 module "client_vpn_sg" {
   source = "terraform-aws-modules/security-group/aws"
@@ -122,17 +112,20 @@ module "client_vpn_sg" {
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
   ingress_rules       = ["all-all"]
-  # ingress_with_self = ["all-all"]
-  egress_rules = ["all-all"]
+  egress_rules        = ["all-all"]
 }
 
 resource "aws_ec2_client_vpn_endpoint" "this" {
   description            = "client VPN"
   server_certificate_arn = aws_acm_certificate.server.arn
-  client_cidr_block      = "10.100.0.0/22"
+  client_cidr_block      = var.client_cidr
   vpc_id                 = var.vpc.vpc_id
   security_group_ids     = [module.client_vpn_sg.security_group_id]
-  dns_servers            = ["8.8.8.8"]
+
+  # DNS server in VPC is always .2 address in VPC subnet
+  # https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/troubleshooting.html#no-internet-access
+
+  dns_servers = [cidrhost(var.vpc.vpc_cidr_block, 2)]
 
   authentication_options {
     type                       = "certificate-authentication"
@@ -145,13 +138,6 @@ resource "aws_ec2_client_vpn_endpoint" "this" {
     enabled = false
   }
 }
-
-# resource "aws_ec2_client_vpn_network_association" "this" {
-#   for_each = toset(var.vpc.private_subnets)
-#
-#   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
-#   subnet_id              = each.key
-# }
 
 locals {
   association_subnets = try(var.vpc.public_subnets, tolist([]))
@@ -170,8 +156,21 @@ resource "aws_ec2_client_vpn_authorization_rule" "this" {
 }
 
 resource "aws_ec2_client_vpn_route" "internet" {
-  count                  = length(local.association_subnets)
+  count                  = 3
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   destination_cidr_block = "0.0.0.0/0"
   target_vpc_subnet_id   = local.association_subnets[count.index]
+}
+
+##############################################################################
+## Client config
+
+resource "local_file" "client_config" {
+  content = templatefile("${path.module}/client-config.ovpn.tftpl", {
+    ca_cert               = tls_self_signed_cert.ca.cert_pem,
+    client_cert           = tls_locally_signed_cert.client.cert_pem,
+    client_key            = tls_private_key.client.private_key_pem,
+    vpn_endpoint_dns_name = aws_ec2_client_vpn_endpoint.this.dns_name
+  })
+  filename = "${path.module}/client-config.ovpn"
 }
