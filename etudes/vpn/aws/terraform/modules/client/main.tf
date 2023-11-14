@@ -139,12 +139,22 @@ resource "aws_ec2_client_vpn_endpoint" "this" {
   }
 }
 
+# `vpc.*_subnets` aren't available until vpc resources are created
+# so terraform freaks out if we attempt to use those, for example
+# in `for_each` or `length`, etc.
+# the way around that is to create local variable in wrapped in `try`,
+# so that terraform can happily plan knowing it can fail back to
+# and empty list, but in real deployment that list will be
+# available, and we'll get correct list of subnets
+# we still can't use length (even on local var), so need to pass
+# as a variable.
+
 locals {
   association_subnets = try(var.vpc.public_subnets, tolist([]))
 }
 
 resource "aws_ec2_client_vpn_network_association" "this" {
-  count                  = 3
+  count                  = var.number_of_associated_subnets
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   subnet_id              = local.association_subnets[count.index]
 }
@@ -156,7 +166,7 @@ resource "aws_ec2_client_vpn_authorization_rule" "this" {
 }
 
 resource "aws_ec2_client_vpn_route" "internet" {
-  count                  = 3
+  count                  = var.number_of_associated_subnets
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   destination_cidr_block = "0.0.0.0/0"
   target_vpc_subnet_id   = local.association_subnets[count.index]

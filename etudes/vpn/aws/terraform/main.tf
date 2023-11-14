@@ -43,7 +43,8 @@ module "vpc" {
 module "client_vpn" {
   source = "./modules/client"
 
-  vpc         = module.vpc
-  client_cidr = var.client_cidr
+  vpc                          = module.vpc
+  client_cidr                  = var.client_cidr
+  number_of_associated_subnets = length(local.public_subnets)
 }
 
