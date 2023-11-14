@@ -33,4 +33,5 @@ override.tf.json
 .terraformrc
 terraform.rc
 
-*_ssh.key
+*.cert
+*.key

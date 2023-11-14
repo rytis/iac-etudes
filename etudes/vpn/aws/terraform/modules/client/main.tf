@@ -132,6 +132,7 @@ resource "aws_ec2_client_vpn_endpoint" "this" {
   client_cidr_block      = "10.100.0.0/22"
   vpc_id                 = var.vpc.vpc_id
   security_group_ids     = [module.client_vpn_sg.security_group_id]
+  dns_servers            = ["8.8.8.8"]
 
   authentication_options {
     type                       = "certificate-authentication"
