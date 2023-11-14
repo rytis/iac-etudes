@@ -170,6 +170,12 @@ resource "aws_ec2_client_vpn_route" "internet" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   destination_cidr_block = "0.0.0.0/0"
   target_vpc_subnet_id   = local.association_subnets[count.index]
+
+  # default is 4, and route management may take considerable amount of time
+  timeouts {
+    create = "30m"
+    delete = "30m"
+  }
 }
 
 ##############################################################################
