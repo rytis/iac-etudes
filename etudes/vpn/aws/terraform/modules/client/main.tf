@@ -104,6 +104,9 @@ resource "aws_acm_certificate" "client" {
 ##############################################################################
 ## Client VPN
 
+# in this exercise we'll allow all traffic both ways to and from VPN endpoint
+# full egress access allows to connect to antyhing and anywhere on the internet
+
 module "client_vpn_sg" {
   source = "terraform-aws-modules/security-group/aws"
 
@@ -153,17 +156,28 @@ locals {
   association_subnets = try(var.vpc.public_subnets, tolist([]))
 }
 
+# VPN endpoint needs to be associated with one or more subnets
+# effectivelly creating an interface on that subnet.
+# one association is sufficient for up to 7k client connections
+# but for AZ redundancy purposes we'll associate with all available
+# public subnets
+
 resource "aws_ec2_client_vpn_network_association" "this" {
   count                  = var.number_of_associated_subnets
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   subnet_id              = local.association_subnets[count.index]
 }
 
+# in this excercise we allow VPN access to any network
+
 resource "aws_ec2_client_vpn_authorization_rule" "this" {
   client_vpn_endpoint_id = aws_ec2_client_vpn_endpoint.this.id
   target_network_cidr    = "0.0.0.0/0"
   authorize_all_groups   = true
 }
+
+# we also need to create explicit routes in each associated
+# subnet to allow access to the internet
 
 resource "aws_ec2_client_vpn_route" "internet" {
   count                  = var.number_of_associated_subnets
@@ -180,6 +194,9 @@ resource "aws_ec2_client_vpn_route" "internet" {
 
 ##############################################################################
 ## Client config
+
+# generate client configuration file to be used in any OpenVPN compatible
+# VPN client (OpenVPN, AmazonVPN, Tunnelblick, etc)
 
 resource "local_file" "client_config" {
   content = templatefile("${path.module}/client-config.ovpn.tftpl", {
