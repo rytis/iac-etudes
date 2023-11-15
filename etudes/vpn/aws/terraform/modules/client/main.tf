@@ -176,6 +176,18 @@ resource "aws_ec2_client_vpn_authorization_rule" "this" {
   authorize_all_groups   = true
 }
 
+# there is a limit on how many concurrent operations can run (10)
+# https://docs.aws.amazon.com/vpn/latest/clientvpn-admin/limits.html
+# so we need to add 5 min delay between network association job
+# (which is 6 operations - subnet association+default rules)
+# and extra subnet routing configuration
+
+resource "time_sleep" "wait_5min" {
+  create_duration  = "5m"
+  destroy_duration = "5m"
+  depends_on       = [aws_ec2_client_vpn_network_association.this]
+}
+
 # we also need to create explicit routes in each associated
 # subnet to allow access to the internet
 
@@ -190,6 +202,8 @@ resource "aws_ec2_client_vpn_route" "internet" {
     create = "30m"
     delete = "30m"
   }
+
+  depends_on = [time_sleep.wait_5min]
 }
 
 ##############################################################################
