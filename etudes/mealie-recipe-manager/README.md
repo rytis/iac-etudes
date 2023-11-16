@@ -1,9 +1,21 @@
+# Project
+
+Highly available installation of [Mealie recipe manager](https://nightly.mealie.io).
+
+## Design details
+
+- Frontend (web service and API) deployed as containers on cloud provider container platform
+- Use cloud provider native database instance
+- Shared storage attached to all containers to share static user uploaded data (recipe images, etc)
+- Loadbalancer and autoscaling to ensure scale out/in based on system load
+
+## Implementation details
+
 - Deploy [Mealie recipe manager](https://nightly.mealie.io) on ECS (Fargate)
 - Use RDS (Postgres) as DB
 - Set up ELB for autoscaling
 
 # Usage
-
 
 ## Deploy everything
 
