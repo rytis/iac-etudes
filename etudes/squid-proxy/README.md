@@ -1,3 +1,15 @@
+# Project
+
+Deploy a password authenticated SOCKS5 proxy.
+
+## Design details
+
+- Uses [Squid Proxy](http://www.squid-cache.org)
+- Deployed as a single VM (therefore the service is not HA)
+- Authentication details stored in cloud provider's secrets manager
+
+## Implementation details
+
 - Deploy single VM
 - Public network
 - Access configuration
