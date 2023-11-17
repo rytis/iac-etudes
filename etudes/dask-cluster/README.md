@@ -1,3 +1,18 @@
+# Project
+
+Build a [Dask](https://docs.dask.org/) cluster. Create an instance of either
+[Jupyter](https://jupyter.org) Notebook or JupyterLab that can access the cluster.
+Create an S3 compatible storage to store data.
+
+## Design details
+
+- Single Dask scheduler instance
+- Multiple Dask workers in autoscaling group to allow for higher loads
+- Use cloud provider managed Jupyter (if available)
+- Allow external connection to the cluster
+
+## Implementation details
+
 - Set up [Dask](https://docs.dask.org/) cluster on ECS (Fargate)
 - Use autoscaling to scale out
 - Access
