@@ -40,10 +40,19 @@ module "vpc" {
 ###############################################################################
 ## Client VPN
 
-module "client_vpn" {
-  source = "./modules/client"
+# module "client_vpn" {
+#   source = "./modules/client"
+#
+#   vpc                          = module.vpc
+#   client_cidr                  = var.client_cidr
+#   number_of_associated_subnets = length(local.public_subnets)
+# }
 
-  vpc                          = module.vpc
-  client_cidr                  = var.client_cidr
-  number_of_associated_subnets = length(local.public_subnets)
+###############################################################################
+## Site-to-Site VPN
+
+module "site_to_site_vpn" {
+  source = "./modules/site"
+
+  vpc = module.vpc
 }
