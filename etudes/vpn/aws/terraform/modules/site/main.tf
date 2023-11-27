@@ -5,15 +5,25 @@ module "transit_gateway" {
   name = "test-tg"
 
   vpc_attachments = {
-    vpc = {
-      vpc_id      = var.vpc.vpc_id
-      subnet_ids  = var.vpc.public_subnets
+    vpc_a = {
+      vpc_id      = var.vpc_a.vpc_id
+      subnet_ids  = var.vpc_a.public_subnets
       dns_support = true
-      tgw_routes = [
-        {
-          destination_cidr_block = var.vpc.public_subnets_cidr_blocks[0]
-        }
-      ]
+      # tgw_routes = [
+      #   {
+      #     destination_cidr_block = var.vpc_a.public_subnets_cidr_blocks[0]
+      #   }
+      # ]
+    }
+    vpc_b = {
+      vpc_id      = var.vpc_b.vpc_id
+      subnet_ids  = var.vpc_b.public_subnets
+      dns_support = true
+      # tgw_routes = [
+      #   {
+      #     destination_cidr_block = var.vpc_b.public_subnets_cidr_blocks[0]
+      #   }
+      # ]
     }
   }
 
