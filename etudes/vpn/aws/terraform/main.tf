@@ -38,26 +38,26 @@ locals {
 module "vpc_a" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name               = var.vpc_a_name
-  cidr               = var.vpc_a_cidr
-  azs                = local.azs
-  public_subnets     = local.public_subnets_a
-  private_subnets    = local.private_subnets_a
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  name                    = var.vpc_a_name
+  cidr                    = var.vpc_a_cidr
+  azs                     = local.azs
+  public_subnets          = local.public_subnets_a
+  private_subnets         = local.private_subnets_a
+  enable_nat_gateway      = true
+  single_nat_gateway      = true
   map_public_ip_on_launch = true
 }
 
 module "vpc_b" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name               = var.vpc_b_name
-  cidr               = var.vpc_b_cidr
-  azs                = local.azs
-  public_subnets     = local.public_subnets_b
-  private_subnets    = local.private_subnets_b
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  name                    = var.vpc_b_name
+  cidr                    = var.vpc_b_cidr
+  azs                     = local.azs
+  public_subnets          = local.public_subnets_b
+  private_subnets         = local.private_subnets_b
+  enable_nat_gateway      = true
+  single_nat_gateway      = true
   map_public_ip_on_launch = true
 }
 
