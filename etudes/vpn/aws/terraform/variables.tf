@@ -5,3 +5,4 @@ variable "vpc_b_name" {}
 variable "vpc_b_cidr" {}
 variable "client_cidr" {}
 variable "site_cidr" {}
+variable "client_gw_ip" {}

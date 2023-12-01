@@ -46,6 +46,12 @@ module "vpc_a" {
   enable_nat_gateway      = true
   single_nat_gateway      = true
   map_public_ip_on_launch = true
+  customer_gateways = {
+    gw1 = {
+      bgp_asn    = 65211
+      ip_address = var.client_gw_ip
+    }
+  }
 }
 
 module "vpc_b" {
@@ -97,9 +103,13 @@ module "client_vpn" {
 ###############################################################################
 ## Site VPN
 
+# TODO: test with remote VPN
+
 module "site_vpn" {
   source = "./modules/site"
 
   vpc_a = module.vpc_a
   vpc_b = module.vpc_b
+
+  transit_gateway = module.transit_gateway.transit_gw
 }
