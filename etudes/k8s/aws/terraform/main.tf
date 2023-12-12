@@ -84,6 +84,8 @@ module "eks" {
   }
 }
 
+## EBS
+
 data "aws_iam_policy" "ebs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
@@ -98,6 +100,8 @@ module "irsa-ebs-csi" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
+## EFS
+
 data "aws_iam_policy" "efs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
 }
@@ -109,5 +113,21 @@ module "irsa-efs-csi" {
   role_name                     = "Amazon-EKS-TF-EFS-CSI-Role-${module.eks.cluster_name}"
   provider_url                  = module.eks.oidc_provider
   role_policy_arns              = [data.aws_iam_policy.efs_csi_policy.arn]
-  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:efs-csi-*"]
+  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:efs-csi-controller-sa"]
 }
+
+module "efs_volume" {
+  source = "terraform-aws-modules/efs/aws"
+
+  name = "k8s-data"
+
+  mount_targets = { for k, v in zipmap(module.vpc.azs, module.vpc.private_subnets) : k => { subnet_id = v } }
+
+  security_group_vpc_id = module.vpc.vpc_id
+  security_group_rules = {
+    vpc = {
+      cidr_blocks = module.vpc.private_subnets_cidr_blocks
+    }
+  }
+}
+
