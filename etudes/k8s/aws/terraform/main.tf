@@ -51,10 +51,6 @@ module "eks" {
   subnet_ids                     = module.vpc.private_subnets
   cluster_endpoint_public_access = true
 
-  eks_managed_node_group_defaults = {
-    ami_type = "AL2_x86_64"
-  }
-
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent              = true
@@ -66,6 +62,10 @@ module "eks" {
     }
   }
 
+  eks_managed_node_group_defaults = {
+    ami_type = "AL2_x86_64"
+  }
+
   eks_managed_node_groups = {
     one = {
       name           = "node-group-1"
@@ -73,6 +73,9 @@ module "eks" {
       min_size       = 1
       max_size       = 3
       desired_size   = 1
+      iam_role_additional_policies = {
+        efs_full_client = data.aws_iam_policy.aws_efs_full.arn
+      }
     }
     two = {
       name           = "node-group-2"
@@ -80,11 +83,19 @@ module "eks" {
       min_size       = 1
       max_size       = 3
       desired_size   = 1
+      iam_role_additional_policies = {
+        efs_full_client = data.aws_iam_policy.aws_efs_full.arn
+      }
     }
   }
+
 }
 
-## EBS
+data "aws_iam_policy" "aws_efs_full" {
+  name = "AmazonElasticFileSystemClientFullAccess"
+}
+
+## -- EBS ----
 
 data "aws_iam_policy" "ebs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
@@ -100,7 +111,7 @@ module "irsa-ebs-csi" {
   oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
 }
 
-## EFS
+## -- EFS ----
 
 data "aws_iam_policy" "efs_csi_policy" {
   arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
