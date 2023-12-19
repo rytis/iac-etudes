@@ -1,0 +1,45 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+
+---
+# in StatefulSet each pod will get their own volume created and attached
+# settings for Pod volumes are defined in volume claim template (equivalent to PersistentVolumeClaim)
+# when statefulset is removed, created volumes will remain undeleted
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ubuntu
+spec:
+  selector:
+    matchLabels:
+      app: ubuntu-statefulset
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ubuntu-statefulset
+    spec:
+      containers:
+        - name: ubuntu
+          image: ubuntu
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - name: persistent-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: persistent-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: ebs
+        resources:
+          requests:
+            storage: 4Gi
+

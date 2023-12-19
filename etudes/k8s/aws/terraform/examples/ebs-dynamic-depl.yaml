@@ -1,0 +1,51 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ebs
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# in Deployemnt all pods will use the same volume
+# when Deployment is deleted, the created PV will also be removed
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu
+spec:
+  selector:
+    matchLabels:
+      app: ubuntu-deployment
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: ubuntu-deployment
+    spec:
+      containers:
+        - name: ubuntu
+          image: ubuntu
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - name: persistent-data
+              mountPath: /data
+      volumes:
+        - name: persistent-data
+          persistentVolumeClaim:
+            claimName: ebs

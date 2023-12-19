@@ -9,5 +9,5 @@ mountOptions:
   - iam
 parameters:
   provisioningMode: efs-ap
-  fileSystemId: fs-0a97bc75c3e09ffd2
+  fileSystemId: fs-061c2f8ac3c6bb990
   directoryPerms: "700"
