@@ -1,0 +1,47 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: efs
+provisioner: efs.csi.aws.com
+mountOptions:
+  - tls
+  - iam
+parameters:
+  provisioningMode: efs-ap
+  fileSystemId: fs-0f4ac51547e269599
+  directoryPerms: "700"
+
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: efs-ubuntu
+spec:
+  selector:
+    matchLabels:
+      app: efs-ubuntu
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: efs-ubuntu
+    spec:
+      containers:
+        - name: efs-ubuntu
+          image: ubuntu
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - name: persistent-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: persistent-data
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: efs
+        resources:
+          requests:
+            storage: 5Gi

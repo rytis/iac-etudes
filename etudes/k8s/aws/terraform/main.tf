@@ -135,3 +135,50 @@ module "efs_volume" {
   }
 }
 
+## TEST EC2 instance
+
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
+
+data "aws_iam_policy" "aws_ssm_core" {
+  name = "AmazonSSMManagedInstanceCore"
+}
+
+data "aws_iam_policy" "aws_cloudwatch_agent" {
+  name = "CloudWatchAgentServerPolicy"
+}
+
+module "efs_client" {
+  source = "terraform-aws-modules/ec2-instance/aws"
+
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t3a.micro"
+  subnet_id     = module.vpc.private_subnets[0]
+
+  create_iam_instance_profile = true
+  iam_role_name               = "ec2-test-host"
+  iam_role_policies = {
+    SSMCore         = data.aws_iam_policy.aws_ssm_core.arn
+    CloudWatchAgent = data.aws_iam_policy.aws_cloudwatch_agent.arn
+    EFSClient       = data.aws_iam_policy.aws_efs_full.arn
+  }
+
+  vpc_security_group_ids = [module.ssm_sg.security_group_id]
+}
+
+module "ssm_sg" {
+  source = "terraform-aws-modules/security-group/aws"
+
+  name                = "sg for ssm"
+  vpc_id              = module.vpc.vpc_id
+  egress_rules        = ["https-443-tcp", "nfs-tcp"]
+  ingress_rules       = ["https-443-tcp"]
+  ingress_cidr_blocks = ["0.0.0.0/0"]
+}
